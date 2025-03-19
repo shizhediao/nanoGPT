@@ -315,7 +315,7 @@ if __name__ == '__main__':
     device = 'cuda'  # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
     batch_size = 256
     dtype = 'float16' # 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'  # 'float32' or 'bfloat16' or 'float16'
-    tasks = ["truthfulqa"]  # ,  "mmlu_continuation", "lambada_openai", "hellaswag", "gpqa_main_zeroshot", "winogrande", "wikitext", "arc_easy", "arc_challenge", "piqa", "social_iqa", "truthfulqa"
+    tasks = ["mmlu_continuation", "lambada_openai", "hellaswag", "gpqa_main_zeroshot", "winogrande", "wikitext", "arc_easy", "arc_challenge", "piqa", "social_iqa", "truthfulqa"]  # ,  
     exec(open('configurator.py').read())  # overrides from command line or config file
     # -----------------------------------------------------------------------------
 
