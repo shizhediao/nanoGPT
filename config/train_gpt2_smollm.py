@@ -4,17 +4,20 @@
 
 wandb_log = True
 wandb_project = 'nanogpt'
-wandb_run_name='gpt2-xl'
+wandb_run_name='gpt2-xl-smollm'
+dataset = 'smollm'
+out_dir = 'gpt2-xl-smollm'
+init_from = 'resume'
 
-# these make the total batch size be ~0.5M
-# 12 batch size * 1024 block size * 1 gradaccum * 32 GPUs = 0.4M
+# 12 batch size * 1024 block size * 1 gradaccum * 256 GPUs = 3.1M
 batch_size = 12
 block_size = 1024
-gradient_accumulation_steps = 1 * 32
+gradient_accumulation_steps = 1 * 256
 
-# this makes total number of tokens be 300B
-max_iters = 600000
-lr_decay_iters = 600000
+# this makes total number of tokens be 100B
+max_iters = 35000
+lr_decay_iters = 35000
+warmup_iters = 1000
 
 # eval stuff
 eval_interval = 1000
@@ -28,7 +31,4 @@ weight_decay = 1e-1
 n_layer = 48
 n_head = 25
 n_embd = 1600
-
-out_dir = 'gpt2-xl'
-init_from = 'scratch'
 
