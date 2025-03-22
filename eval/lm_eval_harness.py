@@ -16,6 +16,9 @@ import os
 import json
 import lm_eval
 
+# Update imports to reference parent directory
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from model import GPT
 from tokenizer import Tokenizer
 
@@ -306,17 +309,49 @@ class NanoGPTModel(TemplateLM):
 
 if __name__ == '__main__':
     # -----------------------------------------------------------------------------
-    init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-    out_dir = 'out'  # ignored if init_from is not 'resume'
-    max_new_tokens = 1024  # number of tokens generated in each sample
-    temperature = 0.8  # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
-    top_k = 200  # retain only the top_k most likely tokens, clamp others to have 0 probability
-    seed = 1337
-    device = 'cuda'  # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
-    batch_size = 256
-    dtype = 'float16' # 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'  # 'float32' or 'bfloat16' or 'float16'
-    tasks = ["mmlu_continuation", "lambada_openai", "hellaswag", "gpqa_main_zeroshot", "winogrande", "wikitext", "arc_easy", "arc_challenge", "piqa", "social_iqa", "truthfulqa"]  # ,  
-    exec(open('configurator.py').read())  # overrides from command line or config file
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Evaluate a NanoGPT model using lm-evaluation-harness')
+    parser.add_argument('--init_from', type=str, default='resume', 
+                        help="Either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')")
+    parser.add_argument('--out_dir', type=str, default='out',
+                        help="Output directory (ignored if init_from is not 'resume')")
+    parser.add_argument('--max_new_tokens', type=int, default=1024,
+                        help="Number of tokens generated in each sample")
+    parser.add_argument('--temperature', type=float, default=0.8,
+                        help="1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions")
+    parser.add_argument('--top_k', type=int, default=200,
+                        help="Retain only the top_k most likely tokens, clamp others to have 0 probability")
+    parser.add_argument('--seed', type=int, default=1337,
+                        help="Random seed for reproducibility")
+    parser.add_argument('--device', type=str, default='cuda',
+                        help="Device to use (examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.)")
+    parser.add_argument('--batch_size', type=int, default=1024,
+                        help="Batch size for evaluation")
+    parser.add_argument('--num_fewshot', type=int, default=0,
+                        help="Number of examples in few-shot prompts")
+    parser.add_argument('--tasks', nargs='+', default=[
+                        "mmlu_continuation", "lambada_openai", "hellaswag", 
+                        "gpqa_main_zeroshot", "winogrande", "wikitext", 
+                        "arc_easy", "arc_challenge", "piqa", "social_iqa", "truthfulqa"],
+                        help="Tasks to evaluate on")
+    parser.add_argument('--limit', type=int, default=None,
+                        help="Limit the number of examples per task (for testing)")
+    
+    args = parser.parse_args()
+    
+    # Extract arguments
+    init_from = args.init_from
+    out_dir = args.out_dir
+    max_new_tokens = args.max_new_tokens
+    temperature = args.temperature
+    top_k = args.top_k
+    seed = args.seed
+    device = args.device
+    batch_size = args.batch_size
+    num_fewshot = args.num_fewshot
+    dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16'
+    tasks = args.tasks
     # -----------------------------------------------------------------------------
 
     # Initialize accelerator
@@ -346,12 +381,12 @@ if __name__ == '__main__':
         full_results = lm_eval.simple_evaluate(
             model=NanoGPTModel(model, tokenizer, device=device, max_gen_tokens=max_new_tokens, temperature=temperature, top_k=top_k),
             tasks=tasks,
-            num_fewshot=0,
+            num_fewshot=num_fewshot,
             batch_size=batch_size, 
             log_samples=True,
             write_out=True,
+            use_cache=out_dir+f"/{'_'.join(tasks)}_cache",
             # limit=10,
-            # use_cache=out_dir+f"/cache",
         )
         
         # Only save results on the main process
@@ -361,12 +396,12 @@ if __name__ == '__main__':
             print(f"results = {results}")
 
             # Use out_dir instead of args.output_dir
-            metrics_file = os.path.join(out_dir, f"metrics_{'_'.join(tasks)}_{0}.json")
+            metrics_file = os.path.join(out_dir, f"metrics_{'_'.join(tasks)}_{num_fewshot}.json")
             print(f"metrics_file = {metrics_file}")
             # save metrics to metrics_file (if exists, overwrite)
             with open(metrics_file, 'w') as f:
                 json.dump(results, f)
             # save samples
-            samples_file = os.path.join(out_dir, f"samples_{'_'.join(tasks)}_{0}.json")
+            samples_file = os.path.join(out_dir, f"samples_{'_'.join(tasks)}_{num_fewshot}.json")
             with open(samples_file, 'w') as f:
                 json.dump(samples, f)
