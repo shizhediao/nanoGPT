@@ -7,28 +7,23 @@ import yaml
 
 def extract_results(folder_path, specific_model_name=None):
     all_results = {}
-    for root, dirs, files in os.walk(folder_path):
-        if "mamba" in root or 'v2_' in root or 'archive' in root: #  or 'archive' in root
-            continue
-        
-        # if specific_model_name and specific_model_name not in root:
-        #     continue
-        
+    for root, dirs, files in os.walk(folder_path):        
         one_results = {}
-        model_name = root.split("__")[-1]
+        print(f"SHIZHE DEBUG:root: {root}")
+        model_name = root.split("/")[-1]
         print(f"Processing {model_name}")
         for file in files:
-            if file.startswith('metrics'):
+            if file.startswith('results'):
                 with open(os.path.join(root, file), 'r') as f:
-                    file_content = json.load(f)
+                    file_content = json.load(f)['results']
                     # print(f"File content: {file_content}")
 
-                    for result in file_content:
+                    for task_name, result in file_content.items():
                         alias = result.get('alias')
-                        if alias == 'wikitext':
-                            one_results['wiki_ppl'] = result.get('word_perplexity,none')
-                        elif alias == 'lambada_openai':
-                            one_results['lambda_ppl'] = result.get('perplexity,none')
+                        # if alias == 'wikitext':
+                        #     one_results['wiki_ppl'] = result.get('word_perplexity,none')
+                        if alias == 'lambada_openai':
+                            # one_results['lambda_ppl'] = result.get('perplexity,none')
                             one_results['lambda_acc'] = result.get('acc,none') * 100
                         elif alias == 'piqa':
                             one_results['piqa_acc_norm'] = result.get('acc_norm,none') * 100
@@ -72,14 +67,20 @@ def extract_results(folder_path, specific_model_name=None):
                             one_results['mmlu_acc'] = result.get('acc,none') * 100
                         elif alias == 'mmlu (continuation)':
                             one_results['mmlu_cloze_avg'] = result.get('acc,none') * 100
-                        elif 'mmlu_continuation' in file and alias == ' - stem':
-                            one_results['mmlu_cloze_stem'] = result.get('acc,none') * 100
-                        elif 'mmlu_continuation' in file and alias == ' - humanities':
-                            one_results['mmlu_cloze_humanities'] = result.get('acc,none') * 100
-                        elif 'mmlu_continuation' in file and alias == ' - social sciences':
-                            one_results['mmlu_cloze_social_sciences'] = result.get('acc,none') * 100
-                        elif 'mmlu_continuation' in file and alias == ' - other':
-                            one_results['mmlu_cloze_other'] = result.get('acc,none') * 100
+                        # elif alias == ' - stem':
+                        #     one_results['mmlu_cloze_stem'] = result.get('acc,none') * 100
+                        # elif alias == ' - humanities':
+                        #     one_results['mmlu_cloze_humanities'] = result.get('acc,none') * 100
+                        # elif alias == ' - social sciences':
+                        #     one_results['mmlu_cloze_social_sciences'] = result.get('acc,none') * 100
+                        # elif alias == ' - other':
+                        #     one_results['mmlu_cloze_other'] = result.get('acc,none') * 100
+                        elif alias == "openbookqa":
+                            one_results['openbookqa_acc_norm'] = result.get('acc_norm,none') * 100
+                        elif alias == "boolq":
+                            one_results['boolq_acc'] = result.get('acc,none') * 100
+                        elif alias == "race":
+                            one_results['race_acc'] = result.get('acc,none') * 100
                     # wiki_ppl = results.get('wikitext', {}).get('word_perplexity,none')
                     # lambda_ppl = results.get('lambada_openai', {}).get('perplexity,none')
                     # lambda_acc = results.get('lambada_openai', {}).get('acc,none')
@@ -101,14 +102,14 @@ def extract_results(folder_path, specific_model_name=None):
     return all_results
 
 if __name__ == "__main__":
-    folder_path = "/lustre/fsw/portfolios/nvr/users/sdiao/nanoGPT/gpt2-xl-finewebedu"
-    # specific_model_name = "gpt2-xl-smollm-8k"
+    folder_path = "/lustre/fsw/portfolios/nvr/users/sdiao/nanoGPT/gpt2-xl-climbmix-8k-lr3e-4"
     specific_model_name = folder_path.split("/")[-1]
 
     results = extract_results(folder_path, specific_model_name)
 
     # csv_columns = ['model_name', 'wiki_ppl', 'lambda_ppl', 'lambda_acc', 'piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa', 'avg', 'valid_avg', 'mmlu_acc', 'mmlu_cloze_avg', 'mmlu_cloze_stem', 'mmlu_cloze_humanities', 'mmlu_cloze_social_sciences', 'mmlu_cloze_other', 'condensed_topics', 'paloma_c4_100_domains_ppl', 'paloma_c4_ppl', 'paloma_dolma_100_PLs_ppl', 'paloma_dolma_100_subreddits_ppl', 'paloma_dolma_v1_5_ppl', 'paloma_falcon_ppl', 'paloma_m2d2_s2orc_ppl', 'paloma_m2d2_wikipedia_ppl', 'paloma_ptb_ppl', 'paloma_mc4_ppl', 'paloma_redpajama_ppl', 'paloma_wikitext_103_ppl', 'config_name', 'super_cluster_1', 'super_cluster_2', 'super_cluster_3', 'super_cluster_4', 'super_cluster_5', 'super_cluster_6', 'super_cluster_7', 'super_cluster_8', 'super_cluster_9', 'super_cluster_10', 'super_cluster_11', 'super_cluster_12', 'super_cluster_13', 'super_cluster_14', 'super_cluster_15', 'super_cluster_16', 'sft_cluster', 'smollm-cosmopedia', 'smollm-finewebedu', 'smollm-pythonedu', 'fake_acad']
-    csv_columns = ['model_name', 'wiki_ppl', 'lambda_ppl', 'lambda_acc', 'piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa', 'avg', 'valid_avg', 'mmlu_acc', 'mmlu_cloze_avg', 'mmlu_cloze_stem', 'mmlu_cloze_humanities', 'mmlu_cloze_social_sciences', 'mmlu_cloze_other', 'avg_w_mmlu', 'condensed_topics', 'paloma_c4_100_domains_ppl', 'paloma_c4_ppl', 'paloma_dolma_100_PLs_ppl', 'paloma_dolma_100_subreddits_ppl', 'paloma_dolma_v1_5_ppl', 'paloma_falcon_ppl', 'paloma_m2d2_s2orc_ppl', 'paloma_m2d2_wikipedia_ppl', 'paloma_ptb_ppl', 'paloma_mc4_ppl', 'paloma_redpajama_ppl', 'paloma_wikitext_103_ppl', 'config_name', 'low', 'synthetic-high-knowledge_list', 'synthetic-high-diverse_qa_pairs', 'synthetic-high-wrap_medium', 'synthetic-high-distill', 'synthetic-low-wrap_medium', 'synthetic-high-extract_knowledge', 'high', 'medium-low', 'medium', 'medium-high']
+    # csv_columns = ['model_name', 'wiki_ppl', 'lambda_ppl', 'lambda_acc', 'piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa', 'avg', 'valid_avg', 'mmlu_acc', 'mmlu_cloze_avg', 'mmlu_cloze_stem', 'mmlu_cloze_humanities', 'mmlu_cloze_social_sciences', 'mmlu_cloze_other', 'avg_w_mmlu', 'condensed_topics', 'paloma_c4_100_domains_ppl', 'paloma_c4_ppl', 'paloma_dolma_100_PLs_ppl', 'paloma_dolma_100_subreddits_ppl', 'paloma_dolma_v1_5_ppl', 'paloma_falcon_ppl', 'paloma_m2d2_s2orc_ppl', 'paloma_m2d2_wikipedia_ppl', 'paloma_ptb_ppl', 'paloma_mc4_ppl', 'paloma_redpajama_ppl', 'paloma_wikitext_103_ppl', 'config_name', 'low', 'synthetic-high-knowledge_list', 'synthetic-high-diverse_qa_pairs', 'synthetic-high-wrap_medium', 'synthetic-high-distill', 'synthetic-low-wrap_medium', 'synthetic-high-extract_knowledge', 'high', 'medium-low', 'medium', 'medium-high']
+    csv_columns = ['model_name', 'mmlu_cloze_avg', 'lambda_acc', 'arc_easy_acc', 'arc_challenge_acc_norm', 'piqa_acc_norm', 'hellaswag_acc_norm', 'winogrande_acc', 'openbookqa_acc_norm', 'truthfulqa_mc2_acc', 'siqa', 'boolq_acc', 'race_acc', 'avg']
 
     csv_file = f"lm_harness_results_{specific_model_name}.csv"
     error_cluster = []
@@ -125,9 +126,10 @@ if __name__ == "__main__":
 
                 # 根据这几列'lambda_acc', 'piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa'，计算avg
                 try:
-                    row['avg'] = sum([row[key] for key in ['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa']]) / len(['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa'])
-                    row['valid_avg'] = sum([row[key] for key in ['piqa_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm']]) / len(['piqa_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm'])
-                    row['avg_w_mmlu'] = sum([row[key] for key in ['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa', 'mmlu_cloze_stem', 'mmlu_cloze_humanities', 'mmlu_cloze_social_sciences', 'mmlu_cloze_other']]) / len(['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa', 'mmlu_cloze_stem', 'mmlu_cloze_humanities', 'mmlu_cloze_social_sciences', 'mmlu_cloze_other'])
+                    # row['avg'] = sum([row[key] for key in ['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa']]) / len(['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa'])
+                    # row['valid_avg'] = sum([row[key] for key in ['piqa_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm']]) / len(['piqa_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm'])
+                    # row['avg_w_mmlu'] = sum([row[key] for key in ['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa', 'mmlu_cloze_stem', 'mmlu_cloze_humanities', 'mmlu_cloze_social_sciences', 'mmlu_cloze_other']]) / len(['piqa_acc_norm', 'arc_challenge_acc_norm', 'arc_easy_acc', 'hellaswag_acc_norm', 'winogrande_acc', 'truthfulqa_mc2_acc', 'siqa', 'mmlu_cloze_stem', 'mmlu_cloze_humanities', 'mmlu_cloze_social_sciences', 'mmlu_cloze_other'])
+                    row['avg'] = sum([row[key] for key in ['mmlu_cloze_avg', 'lambda_acc', 'arc_easy_acc', 'arc_challenge_acc_norm', 'piqa_acc_norm', 'hellaswag_acc_norm', 'winogrande_acc', 'openbookqa_acc_norm', 'truthfulqa_mc2_acc', 'siqa', 'boolq_acc', 'race_acc']]) / len(['mmlu_cloze_avg', 'lambda_acc', 'arc_easy_acc', 'arc_challenge_acc_norm', 'piqa_acc_norm', 'hellaswag_acc_norm', 'winogrande_acc', 'openbookqa_acc_norm', 'truthfulqa_mc2_acc', 'siqa', 'boolq_acc', 'race_acc'])
                 except:
                     # error_cluster.append(int(model_name.split("_cluster_")[-1]))
                     error_cluster.append(model_name)
