@@ -22,7 +22,7 @@ cd /lustre/fsw/portfolios/nvr/users/sdiao/nanoGPT
 
 iter_num=ITER_NUM
 
-model_name="gpt2-xl-smollm-8k-lr3e-4"
+model_name="gpt2-xl-smollm-8k-lr1e-4"
 original_checkpoint_path="${model_name}/ckpt_${iter_num}.pt"
 hf_model_path="${model_name}/hf_model_${iter_num}"
 result_path="${model_name}/eval_results_${iter_num}"
@@ -93,7 +93,7 @@ echo "Evaluation completed. Results saved to ${result_path}"
 EOL
 
 # Loop through iterations from 1000 to 30000 with step size 1000
-for iter in $(seq 1000 1000 4000); do
+for iter in $(seq 0 2000 11000); do
     # Create a job script for this iteration
     job_script="eval_iter_${iter}.sh"
     cp eval_template.sh ${job_script}

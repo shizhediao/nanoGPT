@@ -2,7 +2,7 @@
 set -x
 
 export CUDA_DEVICE_MAX_CONNECTIONS=1
-export WANDB_RUN_ID="nanogpt-smollm-8k-lr6e-4-3"
+export WANDB_RUN_ID="nanogpt-smollm-8k-lr1e-4-6"
 
 cmd='
 source /lustre/fsw/portfolios/nvr/users/sdiao/anaconda3/bin/activate nanogpt;

@@ -102,7 +102,7 @@ def extract_results(folder_path, specific_model_name=None):
     return all_results
 
 if __name__ == "__main__":
-    folder_path = "/lustre/fsw/portfolios/nvr/users/sdiao/nanoGPT/gpt2-xl-climbmix-8k-lr3e-4"
+    folder_path = "/lustre/fsw/portfolios/nvr/users/sdiao/nanoGPT/gpt2-xl-smollm-8k-lr1e-4"
     specific_model_name = folder_path.split("/")[-1]
 
     results = extract_results(folder_path, specific_model_name)
