@@ -28,21 +28,21 @@ args = parser.parse_args()
 seed = args.seed
 print(f"seed = {seed}")
 if __name__ == '__main__':
-    NUM_EXAMPLES = 150000000//4 # EXTRACT A SUBSET OF THE DATASET (使用整数除法)
+    NUM_EXAMPLES = 150000000//4 # EXTRACT A SUBSET OF THE DATASET (use integer division)
 
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{timestamp}] Starting dataset preparation", flush=True)
-    # 使用常规方式加载数据集
+    # load the dataset with regular method
     dataset = load_dataset(
         "mlfoundations/dclm-baseline-1.0-parquet", 
         num_proc=num_proc_load_dataset, 
         trust_remote_code=True,
-        # streaming=True  # 关闭流式读取
+        # streaming=True  # disable streaming
     )
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{timestamp}] Finished loading dataset", flush=True)
     
-    # 设置一个合理的buffer_size，越大随机性越好，但内存消耗也越大
+    # set a reasonable buffer_size, the larger the random, the larger the memory consumption
     buffer_size = 10000
     dataset_train = dataset['train'].shuffle(seed=seed).select(range(NUM_EXAMPLES))
     dataset = {"train": dataset_train}
@@ -53,7 +53,7 @@ if __name__ == '__main__':
     print(f"[{timestamp}] Total number of examples: {len(dataset['train'])}", flush=True)
     print(f"[{timestamp}] Dataset features: {dataset['train'].features}", flush=True)
     
-    # 创建一个小的验证集
+    # create a small validation set
     split_dataset = dataset["train"].train_test_split(test_size=0.0005, seed=2357, shuffle=True)
     split_dataset['val'] = split_dataset.pop('test')  # rename the test split to val
 

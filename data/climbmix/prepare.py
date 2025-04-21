@@ -6,7 +6,7 @@ from tqdm import tqdm
 import numpy as np
 import tiktoken
 from datasets import load_dataset # huggingface datasets
-import argparse  # 添加 argparse 模块
+import argparse  # add argparse module
 
 # number of workers in .map() call
 # good number to use is ~order number of cpu cores // 2
@@ -20,15 +20,15 @@ num_proc_load_dataset = 96  # Reduced to troubleshoot the subprocess error
 enc = tiktoken.get_encoding("gpt2")
 
 if __name__ == '__main__':
-    # 添加命令行参数解析
+    # add parser
     parser = argparse.ArgumentParser(description='Prepare dataset for training')
     parser.add_argument('--file_name', type=str, default="part_0.jsonl",
                         help='JSONL file to process (default: part_0.jsonl)')
     args = parser.parse_args()
     
-    # 使用命令行参数中的 file_name
+    # use the file_name from the command line argument
     data_dir = "/lustre/fsw/portfolios/nvr/users/sdiao/data/CLIMBMIX_400B"
-    file_name = args.file_name  # 从命令行参数获取文件名
+    file_name = args.file_name  # get the file name from the command line argument
     jsonl_files = [os.path.join(data_dir, file_name)]
     
     print(f"Processing file: {file_name}")
